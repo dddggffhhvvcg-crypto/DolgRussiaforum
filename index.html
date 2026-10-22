@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DolgRassia | Форум</title>
 <style>
@@ -62,6 +63,10 @@ footer{padding:0 16px 24px;color:var(--mu);font-size:14px;text-align:center}
 .mi.s{padding:14px 24px 14px 44px;color:var(--mu);font-size:16px}
 #ts{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:30;padding:10px 18px;border-radius:8px;background:#111;color:#fff;opacity:0;pointer-events:none;transform:translateX(-50%);transition:opacity .2s}
 #ts.on{opacity:1}
+.em a{color:var(--ac)}
+.msg{margin:0;color:var(--ac);font-size:15px}
+.bd{cursor:pointer}.bd.o{display:block;-webkit-line-clamp:unset}
+.dl{margin-top:8px;padding:6px 12px;border:1px solid var(--ln);border-radius:6px;background:none;color:var(--ac);font:inherit;font-size:14px;cursor:pointer}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 </style>
 </head>
@@ -75,7 +80,7 @@ footer{padding:0 16px 24px;color:var(--mu);font-size:14px;text-align:center}
 <header>
 <button class="ib" id="mn" aria-label="Меню"><svg class="hi"><use href="#mnu"/></svg></button>
 <a class="br" href="#home"><span class="lg">D</span>DolgRassia</a>
-<a class="ib" href="#reg" aria-label="Регистрация"><svg class="hi"><use href="#key"/></svg></a>
+<a class="ib" id="acc" href="#reg" aria-label="Вход/Регистрация"><svg class="hi"><use href="#key"/></svg></a>
 </header>
 <div id="dr">
 <div class="ov" data-x></div>
@@ -86,14 +91,20 @@ footer{padding:0 16px 24px;color:var(--mu);font-size:14px;text-align:center}
 <button class="mi s" data-na>Новые сообщения</button>
 <button class="mi" data-na>Что нового?</button>
 <button class="mi" data-na>Пользователи</button>
+<a class="mi" id="loginMenu" href="#login">Вход</a>
+<a class="mi" id="regMenu" href="#reg">Регистрация</a>
+<div class="mi s" id="who" hidden></div>
+<button class="mi" id="adminMenu" hidden style="background:var(--ac);color:#fff">Админ панель</button>
+<button class="mi" id="logoutMenu" hidden>Выйти</button>
 </nav>
 </div>
 <main id="app"></main>
 <footer>© DolgRassia</footer>
 <div id="ts" role="status"></div>
 <script>
+document.addEventListener('DOMContentLoaded', () => {
 const $=s=>document.querySelector(s),A=$('#app'),D=$('#dr'),T=$('#ts');
-const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const E=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const F=[
 ['player','Жалобы на игроков',"Ваш ник:\nНик игрока:\nДата и время нарушения:\nСуть жалобы:\nДоказательства (ссылка):\n"],
 ['admin','Жалобы на администрацию',"Ваш ник:\nНик администратора:\nДата и время:\nСуть жалобы:\nДоказательства (ссылка):\n"],
@@ -105,65 +116,132 @@ function ld(k){if(mem[k])return mem[k];let a=[];try{a=JSON.parse(localStorage.ge
 function sv(k,a){mem[k]=a;try{localStorage.setItem('dr:'+k,JSON.stringify(a))}catch(e){}}
 const tot=()=>F.reduce((s,x)=>s+ld(x[0]).length,0);
 const bub=(h,t,n)=>`<a class="nd" href="#${h}"><svg class="ic r"><use href="#bub"/></svg><span><b>${t}</b><span class="st">Темы ${n}<em>Сообщения ${n}</em></span>${n?'':'<span class="lp">Нет</span>'}</span></a>`;
-const lnk=t=>`<button class="nd" data-na><svg class="ic g"><use href="#lnk"/></svg><span><b>${t}</b></span></button>`;
-const box=(t,c)=>`<section class="bx">${t?`<h2 class="hd">${t}</h2>`:''}${c}</section>`;
+const lnk=(t,href)=>href=='#'?`<button class="nd" data-na><svg class="ic g"><use href="#lnk"/></svg><span><b>${t}</b></span></button>`:`<a class="nd" href="${href}" target="_blank" rel="noopener noreferrer"><svg class="ic g"><use href="#lnk"/></svg><span><b>${t}</b></span></a>`;
+const box=(t,c)=>`<section class="bx">${t?`<h2 class="hd" tabindex="0" role="button">${t}</h2>`:''}${c}</section>`;
 const ttl=(t,b,h)=>`<h1>${t}</h1>${b?`<a class="bk" href="#${h}">‹ ${b}</a>`:''}`;
+
+// --- auth ---
+const AE='dolgrussia@gmail.com';
+function getUsers(){try{return JSON.parse(localStorage.getItem('dr:users')||'[]')}catch(e){return[]}}
+function saveUsers(u){localStorage.setItem('dr:users',JSON.stringify(u))}
+function currentUser(){try{return JSON.parse(localStorage.getItem('dr:currentUser')||'null')}catch(e){return null}}
+function setCurrentUser(u){localStorage.setItem('dr:currentUser',JSON.stringify(u))}
+function clearCurrentUser(){localStorage.removeItem('dr:currentUser')}
+function isAdmin(){const u=currentUser();return!!u&&u.email===AE}
+(function(){const us=getUsers();if(!us.some(u=>u.email===AE)){us.push({username:'DolgRussia',email:AE,password:'40614861'});saveUsers(us)}})();
+
+let R=(location.hash||'#home').slice(1)||'home';
+const nav=h=>{R=h;try{if(location.hash!='#'+h)location.hash='#'+h}catch(e){}go()};
+
 function home(){
  const n=tot();
  return ttl('Форум DolgRassia')
-  +box('Основной раздел',bub('news',S.news,0)+bub('tech',S.tech,0)+bub('ideas',S.ideas,0)
-   +['Официальное сообщество в Discord','Официальное сообщество ВКонтакте','Лаборатория разработки (ВКонтакте)','Официальный Telegram-канал'].map(t=>lnk(t)).join(''))
-  +box('Игровые сервера',bub('rules',S.rules,0)+bub('srv','Сервер DolgRussia',n));
+  +box('Основной раздел',bub('news',S.news,ld('news').length)+bub('tech',S.tech,ld('tech').length)+bub('ideas',S.ideas,ld('ideas').length)
+   +['Официальное сообщество в Discord','Официальное сообщество ВКонтакте','Лаборатория разработки (ВКонтакте)'].map(t=>lnk(t,'#')).join('')
+   +lnk('Официальный Telegram-канал','https://t.me/DolgRussia'))
+  +box('Игровые сервера',bub('rules',S.rules,ld('rules').length)+bub('srv','Сервер DolgRussia',n));
 }
+const tpc=(x,k,i,d)=>`<div class="tp"><span class="av">${E((x.t[0]||'?').toUpperCase())}</span><span><b>${E(x.t)}</b><span class="mu">${E(x.author||d)} · ${E(x.d)}</span><span class="bd">${E(x.b)}</span>${isAdmin()?`<button class="dl" data-del="${k}:${i}">Удалить</button>`:''}</span></div>`;
+const lst=(k,d,e)=>ld(k).length?ld(k).map((x,i)=>tpc(x,k,i,d)).join(''):`<p class="em">${e}</p>`;
 function forum(f){
- const a=ld(f[0]);
- const list=a.length?a.map(x=>`<div class="tp"><span class="av">${E((x.t[0]||'?').toUpperCase())}</span><span><b>${E(x.t)}</b><span class="mu">Гость · ${E(x.d)}</span><span class="bd">${E(x.b)}</span></span></div>`).join(''):'<p class="em">Тем пока нет. Создайте первую.</p>';
  return [f[1],ttl(f[1],'Жалобы','cmp')
   +`<div class="ac"><button class="bt" id="nw">Создать тему</button></div>`
   +`<form id="nf" data-k="${f[0]}" hidden><input name="t" required maxlength="120" placeholder="Nick_Name | Суть жалобы"><textarea name="b" required rows="9">${f[2]}</textarea><span class="mu">Тема сохранится только в этом браузере.</span><button class="bt">Опубликовать</button></form>`
-  +box('Обычные темы',list)];
+  +box('Обычные темы',lst(f[0],'Гость','Тем пока нет. Создайте первую.'))];
 }
 function reg(){
- return ttl('Регистрация')+`<form id="rf" class="fm"><label>Имя пользователя <small>Обязательно</small><input required maxlength="30" autocomplete="username"></label><span class="mu">Это имя будет отображаться в ваших сообщениях.</span><label>Электронная почта <small>Обязательно</small><input type="email" required autocomplete="email"></label><label>Пароль <small>Обязательно</small><span class="pw"><input id="pw" type="password" required minlength="6" autocomplete="new-password"><button type="button" data-ps>Показать</button></span></label><label class="ck"><input type="checkbox" required>Я согласен(на) с условиями и политикой конфиденциальности</label><button class="bt">Зарегистрироваться</button></form>`;
+ return ttl('Регистрация')+`<form id="rf" class="fm"><label>Имя пользователя <small>Обязательно</small><input name="username" required maxlength="30" autocomplete="username"></label><span class="mu">Это имя будет отображаться в ваших сообщениях.</span><label>Электронная почта <small>Обязательно</small><input name="email" type="email" required autocomplete="email"></label><label>Пароль <small>Обязательно</small><span class="pw"><input id="pw" name="password" type="password" required minlength="6" autocomplete="new-password"><button type="button" data-ps>Показать</button></span></label><label class="ck"><input type="checkbox" required>Я согласен(на) с условиями и политикой конфиденциальности</label><button class="bt">Зарегистрироваться</button></form><p class="em">Уже есть аккаунт? <a href="#login">Войти</a></p>`;
+}
+function login(){
+ return ttl('Вход')+`<form id="lf" class="fm"><label>Электронная почта<input name="email" type="email" required autocomplete="username"></label><label>Пароль<span class="pw"><input id="pw" name="password" type="password" required autocomplete="current-password"><button type="button" data-ps>Показать</button></span></label><button class="bt">Войти</button></form><p class="em">Нет аккаунта? <a href="#reg">Зарегистрироваться</a></p>`;
+}
+function admin(){
+ if(!isAdmin())return['Доступ запрещён',ttl('Доступ запрещён','Главная','home')+box('','<p class="em">У вас нет прав для просмотра этой страницы.</p>')];
+ return['Админ панель',ttl('Админ панель','Главная','home')+['news','tech','ideas','rules'].map(k=>box(S[k],`<form class="afm" data-k="${k}"><input name="t" required maxlength="120" placeholder="Заголовок"><textarea name="b" required rows="5" placeholder="Текст"></textarea><button class="bt">Добавить</button></form>`+lst(k,'Админ','Пока пусто.'))).join('')];
 }
 function view(h){
  const f=F.find(x=>x[0]==h);
  if(h=='srv')return['Сервер DolgRussia',ttl('Сервер DolgRussia','Игровые сервера','home')+box('',bub('cmp','Жалобы',tot()))];
  if(h=='cmp')return['Жалобы',ttl('Жалобы','Сервер DolgRussia','srv')+box('',F.map(x=>bub(x[0],x[1],ld(x[0]).length)).join(''))];
  if(f)return forum(f);
- if(S.hasOwnProperty(h))return[S[h],ttl(S[h],'Форумы','home')+box('','<p class="em">Тем пока нет.</p>')];
+ if(S.hasOwnProperty(h))return[S[h],ttl(S[h],'Форумы','home')+box('',lst(h,'Гость','Тем пока нет.'))];
  if(h=='reg')return['Регистрация',reg()];
+ if(h=='login')return['Вход',login()];
+ if(h=='panel')return admin();
  return['Форум',home()];
 }
 function go(){
- const h=(location.hash||'#home').slice(1),r=view(h);
+ const h=R,r=view(h),u=currentUser();
  A.innerHTML=r[1];document.title=r[0]+' | DolgRassia';scrollTo(0,0);
+ $('#adminMenu').hidden=!isAdmin();$('#logoutMenu').hidden=!u;$('#loginMenu').hidden=!!u;$('#regMenu').hidden=!!u;$('#acc').hidden=!!u;
+ const w=$('#who');w.hidden=!u;if(u)w.textContent='Вы вошли как '+u.username;
 }
 let tm;
 function toast(m){T.textContent=m;T.classList.add('on');clearTimeout(tm);tm=setTimeout(()=>T.classList.remove('on'),1800)}
 document.addEventListener('click',e=>{
  const t=e.target;
+ const sb=t.closest('form button:not([type=button])');
+ if(sb){e.preventDefault();sub(sb.closest('form'));return}
+ const ln=t.closest('a[href^="#"]');
+ if(ln&&ln.getAttribute('href').length>1){e.preventDefault();D.classList.remove('on');nav(ln.getAttribute('href').slice(1));return}
  if(t.closest('[data-na]')){e.preventDefault();toast('Недоступно')}
  if(t.closest('#mn'))D.classList.add('on');
  if(t.closest('[data-x]')||t.closest('#dr a'))D.classList.remove('on');
  if(t.closest('#nw')){const f=$('#nf');f.hidden=!f.hidden}
  const p=t.closest('[data-ps]');
  if(p){const i=$('#pw');i.type=i.type=='password'?'text':'password';p.textContent=i.type=='password'?'Показать':'Скрыть'}
+ const dl=t.closest('[data-del]');
+ if(dl&&isAdmin()){const[k,i]=dl.dataset.del.split(':'),a=ld(k).slice();a.splice(+i,1);sv(k,a);go();toast('Удалено');return}
+ const bd=t.closest('.bd');
+ if(bd)bd.classList.toggle('o');
  const h=t.closest('.hd');
  if(h)h.parentNode.classList.toggle('cl');
 });
-document.addEventListener('submit',e=>{
- e.preventDefault();
- const f=e.target;
- if(f.id=='rf'){toast('Регистрация пока недоступна');return}
- if(f.id=='nf'){
-  const k=f.dataset.k,a=ld(k).slice(),el=f.elements;
-  a.unshift({t:el.t.value.trim(),b:el.b.value.trim(),d:new Date().toLocaleDateString('ru-RU')});
-  sv(k,a);go();toast('Тема создана');
- }
+document.addEventListener('keydown',e=>{
+ if(e.key=='Escape')D.classList.remove('on');
+ if((e.key=='Enter'||e.key==' ')&&e.target.classList&&e.target.classList.contains('hd')){e.preventDefault();e.target.parentNode.classList.toggle('cl')}
 });
-addEventListener('hashchange',go);
+function msg(f,m){let p=f.querySelector('.msg');if(!p){p=document.createElement('p');p.className='msg';p.setAttribute('role','alert');f.insertBefore(p,f.querySelector('button.bt'))}p.textContent=m;toast(m)}
+function bad(f){for(const el of f.elements){
+ if(el.type=='checkbox'){if(el.required&&!el.checked)return'Подтвердите согласие с условиями';continue}
+ if(el.tagName=='BUTTON')continue;
+ const v=el.value.trim();
+ if(el.required&&!v)return'Заполните все поля';
+ if(el.type=='email'&&!/^\S+@\S+\.\S+$/.test(v))return'Введите корректную почту';
+ if(el.type=='password'&&el.minLength>0&&el.value.length<el.minLength)return'Пароль: минимум '+el.minLength+' символов'}
+ return''}
+let busy=false;
+function sub(f){
+ if(busy)return;busy=true;
+ try{
+  const er=bad(f);if(er){msg(f,er);return}
+  if(f.id=='rf'||f.id=='lf'){
+   const d=new FormData(f),email=d.get('email').trim().toLowerCase(),pw=d.get('password'),us=getUsers();
+   if(f.id=='rf'){
+    const un=d.get('username').trim();
+    if(us.some(u=>u.email===email)){msg(f,'Такая почта уже зарегистрирована');return}
+    if(us.some(u=>u.username.toLowerCase()==un.toLowerCase())){msg(f,'Это имя занято');return}
+    us.push({username:un,email,password:pw});saveUsers(us);setCurrentUser({username:un,email});toast('Регистрация успешна!');
+   }else{
+    const u=us.find(x=>x.email===email&&x.password===pw);
+    if(!u){msg(f,'Неверная почта или пароль');return}
+    setCurrentUser({username:u.username,email:u.email});toast('Вход выполнен');
+   }
+   nav('home');return;
+  }
+  const k=f.dataset.k,adm=f.classList.contains('afm');
+  if(!k||(adm&&!isAdmin()))return;
+  const el=f.elements,t=el.t.value.trim(),b=el.b.value.trim(),u=currentUser(),a=ld(k).slice();
+  a.unshift({t,b,d:new Date().toLocaleDateString('ru-RU'),author:u?u.username:(adm?'Админ':'Гость')});
+  sv(k,a);go();toast(adm?'Добавлено':'Тема создана');
+ }finally{busy=false}
+}
+document.addEventListener('submit',e=>{e.preventDefault();sub(e.target)});
+$('#adminMenu').addEventListener('click',()=>{D.classList.remove('on');nav('panel')});
+$('#logoutMenu').addEventListener('click',()=>{clearCurrentUser();D.classList.remove('on');toast('Вы вышли');nav('home')});
+addEventListener('hashchange',()=>{const h=(location.hash||'#home').slice(1)||'home';if(h!=R){R=h;go()}});
 go();
+});
 </script>
 </body>
-</html>
+ </html>
