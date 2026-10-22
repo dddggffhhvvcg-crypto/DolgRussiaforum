@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DolgRassia | Форум</title>
+<style>
+:root{--bg:#e9ecf0;--row:#fff;--row2:#f4f6f8;--hd:#dfe3e8;--tx:#1c2026;--mu:#5d6672;--ln:#d3d8de;--ac:#c62818;--top:#22262c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2b2f36;--row:#363a43;--row2:#3e434c;--hd:#464b55;--tx:#ecedef;--mu:#a9aeb7;--ln:#2a2d34;--ac:#d9301f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#2b2f36;--row:#363a43;--row2:#3e434c;--hd:#464b55;--tx:#ecedef;--mu:#a9aeb7;--ln:#2a2d34;--ac:#d9301f;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 Roboto,system-ui,"Segoe UI",Arial,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--top)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;display:flex;align-items:center;gap:6px;height:56px;padding:0 8px;background:var(--top);color:#eee;border-bottom:1px solid #0007}
+.ib{display:grid;place-items:center;width:44px;height:44px;border:0;background:none;color:inherit;border-radius:8px}
+.hi{width:26px;height:26px}
+.br{flex:1;display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-weight:700;font-size:19px}
+.lg{display:grid;place-items:center;width:34px;height:34px;border-radius:6px;background:#8a8f98;color:#22262c;font-weight:800}
+main{max-width:760px;margin:0 auto;padding-bottom:28px}
+h1{margin:0;padding:26px 16px 14px;font-size:30px;font-weight:400}
+.bk{display:block;padding:6px 16px 18px;color:var(--tx);text-decoration:none;font-size:18px}
+.bx{margin:0 0 22px;background:var(--row)}
+.hd{display:flex;justify-content:space-between;align-items:center;margin:0;padding:16px;background:var(--hd);font-size:19px;font-weight:500;cursor:pointer}
+.hd::after{content:"";width:11px;height:11px;margin-top:6px;border:solid currentColor;border-width:3px 0 0 3px;transform:rotate(45deg);transition:transform .2s}
+.cl .hd::after{margin-top:-4px;transform:rotate(225deg)}
+.cl>:not(.hd){display:none}
+.nd{display:flex;gap:14px;align-items:flex-start;width:100%;padding:16px;border:0;border-top:1px solid var(--ln);background:var(--row);color:inherit;font:inherit;text-align:left;text-decoration:none;cursor:pointer}
+.nd:nth-child(2n){background:var(--row2)}
+.nd>span{flex:1;min-width:0}
+.nd b{display:block;font-size:19px;font-weight:500}
+.st,.lp{display:block;margin-top:4px;color:var(--mu)}
+.st em{margin-left:12px;font-style:normal}
+.ic{width:34px;height:34px;flex:none}
+.r{color:var(--ac)}.g{color:var(--mu)}
+.em{margin:0;padding:22px 16px;color:var(--mu)}
+.ac{padding:0 16px 16px}
+.bt{padding:12px 20px;border:0;border-radius:6px;background:var(--ac);color:#fff;font:inherit;font-weight:500;cursor:pointer}
+form{display:grid;gap:12px;padding:0 16px 20px}
+input,textarea{width:100%;padding:12px;border:1px solid var(--ln);border-radius:6px;background:var(--row2);color:var(--tx);font:inherit}
+.fm label{display:grid;gap:8px;font-size:18px}
+.fm small{color:var(--mu);font-size:14px}
+.pw{display:flex}
+.pw input{border-radius:6px 0 0 6px}
+.pw button{padding:0 14px;border:1px solid var(--ln);border-left:0;border-radius:0 6px 6px 0;background:var(--row2);color:var(--tx);font:inherit}
+.fm .ck{display:flex;align-items:center;gap:10px;font-size:16px}
+.ck input{width:20px;height:20px}
+.tp{display:flex;gap:12px;padding:14px 16px;border-top:1px solid var(--ln)}
+.tp>span:last-child{min-width:0}
+.av{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;background:var(--hd);font-weight:700}
+.tp b{display:block;font-size:18px}
+.mu{display:block;color:var(--mu);font-size:14px}
+.bd{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-top:4px;white-space:pre-line}
+footer{padding:0 16px 24px;color:var(--mu);font-size:14px;text-align:center}
+#dr{position:fixed;inset:0;z-index:20;display:none}
+#dr.on{display:block}
+.ov{position:absolute;inset:0;background:#0008}
+#dr nav{position:absolute;top:0;bottom:0;left:0;width:78%;max-width:320px;padding-top:env(safe-area-inset-top,0px);overflow:auto;background:var(--row)}
+.mh{display:flex;justify-content:space-between;align-items:center;padding:12px 12px 12px 24px;background:var(--hd);font-size:19px;font-weight:500}
+.mh button{width:40px;height:40px;border:0;background:none;color:inherit;font-size:28px}
+.mi{display:block;width:100%;padding:18px 24px;border:0;border-bottom:1px solid var(--ln);background:none;color:var(--tx);font:inherit;font-size:19px;text-align:left;text-decoration:none}
+.mi.s{padding:14px 24px 14px 44px;color:var(--mu);font-size:16px}
+#ts{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:30;padding:10px 18px;border-radius:8px;background:#111;color:#fff;opacity:0;pointer-events:none;transform:translateX(-50%);transition:opacity .2s}
+#ts.on{opacity:1}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="bub" viewBox="0 0 34 34"><path d="M5 4h24a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H17l-7 6v-6H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M9 11h16M9 17h10" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+<symbol id="lnk" viewBox="0 0 34 34"><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 20l6-6"/><path d="M13 12l3-3a5 5 0 0 1 7 7l-3 3"/><path d="M21 22l-3 3a5 5 0 0 1-7-7l3-3"/></g></symbol>
+<symbol id="key" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="15.5" cy="8.5" r="5"/><path d="M12 12L3 21h4v-3h3v-3"/></g></symbol>
+<symbol id="mnu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+</svg>
+<header>
+<button class="ib" id="mn" aria-label="Меню"><svg class="hi"><use href="#mnu"/></svg></button>
+<a class="br" href="#home"><span class="lg">D</span>DolgRassia</a>
+<a class="ib" href="#reg" aria-label="Регистрация"><svg class="hi"><use href="#key"/></svg></a>
+</header>
+<div id="dr">
+<div class="ov" data-x></div>
+<nav>
+<div class="mh">Меню<button data-x aria-label="Закрыть">×</button></div>
+<a class="mi" href="#home">Главная</a>
+<a class="mi" href="#home">Форумы</a>
+<button class="mi s" data-na>Новые сообщения</button>
+<button class="mi" data-na>Что нового?</button>
+<button class="mi" data-na>Пользователи</button>
+</nav>
+</div>
+<main id="app"></main>
+<footer>© DolgRassia</footer>
+<div id="ts" role="status"></div>
+<script>
+const $=s=>document.querySelector(s),A=$('#app'),D=$('#dr'),T=$('#ts');
+const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const F=[
+['player','Жалобы на игроков',"Ваш ник:\nНик игрока:\nДата и время нарушения:\nСуть жалобы:\nДоказательства (ссылка):\n"],
+['admin','Жалобы на администрацию',"Ваш ник:\nНик администратора:\nДата и время:\nСуть жалобы:\nДоказательства (ссылка):\n"],
+['leader','Жалобы на лидеров',"Ваш ник:\nНик лидера и организация:\nДата и время:\nСуть жалобы:\nДоказательства (ссылка):\n"],
+['appeal','Обжалование наказаний',"Ваш ник:\nКакое наказание и кем выдано:\nДата выдачи:\nПочему наказание неверное:\nДоказательства (ссылка):\n"]];
+const S={news:'Новости и информация',tech:'Технический раздел',ideas:'Предложения по улучшению',rules:'Правила серверов'};
+const mem={};
+function ld(k){if(mem[k])return mem[k];let a=[];try{a=JSON.parse(localStorage.getItem('dr:'+k))||[]}catch(e){}return mem[k]=a}
+function sv(k,a){mem[k]=a;try{localStorage.setItem('dr:'+k,JSON.stringify(a))}catch(e){}}
+const tot=()=>F.reduce((s,x)=>s+ld(x[0]).length,0);
+const bub=(h,t,n)=>`<a class="nd" href="#${h}"><svg class="ic r"><use href="#bub"/></svg><span><b>${t}</b><span class="st">Темы ${n}<em>Сообщения ${n}</em></span>${n?'':'<span class="lp">Нет</span>'}</span></a>`;
+const lnk=t=>`<button class="nd" data-na><svg class="ic g"><use href="#lnk"/></svg><span><b>${t}</b></span></button>`;
+const box=(t,c)=>`<section class="bx">${t?`<h2 class="hd">${t}</h2>`:''}${c}</section>`;
+const ttl=(t,b,h)=>`<h1>${t}</h1>${b?`<a class="bk" href="#${h}">‹ ${b}</a>`:''}`;
+function home(){
+ const n=tot();
+ return ttl('Форум DolgRassia')
+  +box('Основной раздел',bub('news',S.news,0)+bub('tech',S.tech,0)+bub('ideas',S.ideas,0)
+   +['Официальное сообщество в Discord','Официальное сообщество ВКонтакте','Лаборатория разработки (ВКонтакте)','Официальный Telegram-канал'].map(t=>lnk(t)).join(''))
+  +box('Игровые сервера',bub('rules',S.rules,0)+bub('srv','Сервер DolgRussia',n));
+}
+function forum(f){
+ const a=ld(f[0]);
+ const list=a.length?a.map(x=>`<div class="tp"><span class="av">${E((x.t[0]||'?').toUpperCase())}</span><span><b>${E(x.t)}</b><span class="mu">Гость · ${E(x.d)}</span><span class="bd">${E(x.b)}</span></span></div>`).join(''):'<p class="em">Тем пока нет. Создайте первую.</p>';
+ return [f[1],ttl(f[1],'Жалобы','cmp')
+  +`<div class="ac"><button class="bt" id="nw">Создать тему</button></div>`
+  +`<form id="nf" data-k="${f[0]}" hidden><input name="t" required maxlength="120" placeholder="Nick_Name | Суть жалобы"><textarea name="b" required rows="9">${f[2]}</textarea><span class="mu">Тема сохранится только в этом браузере.</span><button class="bt">Опубликовать</button></form>`
+  +box('Обычные темы',list)];
+}
+function reg(){
+ return ttl('Регистрация')+`<form id="rf" class="fm"><label>Имя пользователя <small>Обязательно</small><input required maxlength="30" autocomplete="username"></label><span class="mu">Это имя будет отображаться в ваших сообщениях.</span><label>Электронная почта <small>Обязательно</small><input type="email" required autocomplete="email"></label><label>Пароль <small>Обязательно</small><span class="pw"><input id="pw" type="password" required minlength="6" autocomplete="new-password"><button type="button" data-ps>Показать</button></span></label><label class="ck"><input type="checkbox" required>Я согласен(на) с условиями и политикой конфиденциальности</label><button class="bt">Зарегистрироваться</button></form>`;
+}
+function view(h){
+ const f=F.find(x=>x[0]==h);
+ if(h=='srv')return['Сервер DolgRussia',ttl('Сервер DolgRussia','Игровые сервера','home')+box('',bub('cmp','Жалобы',tot()))];
+ if(h=='cmp')return['Жалобы',ttl('Жалобы','Сервер DolgRussia','srv')+box('',F.map(x=>bub(x[0],x[1],ld(x[0]).length)).join(''))];
+ if(f)return forum(f);
+ if(S.hasOwnProperty(h))return[S[h],ttl(S[h],'Форумы','home')+box('','<p class="em">Тем пока нет.</p>')];
+ if(h=='reg')return['Регистрация',reg()];
+ return['Форум',home()];
+}
+function go(){
+ const h=(location.hash||'#home').slice(1),r=view(h);
+ A.innerHTML=r[1];document.title=r[0]+' | DolgRassia';scrollTo(0,0);
+}
+let tm;
+function toast(m){T.textContent=m;T.classList.add('on');clearTimeout(tm);tm=setTimeout(()=>T.classList.remove('on'),1800)}
+document.addEventListener('click',e=>{
+ const t=e.target;
+ if(t.closest('[data-na]')){e.preventDefault();toast('Недоступно')}
+ if(t.closest('#mn'))D.classList.add('on');
+ if(t.closest('[data-x]')||t.closest('#dr a'))D.classList.remove('on');
+ if(t.closest('#nw')){const f=$('#nf');f.hidden=!f.hidden}
+ const p=t.closest('[data-ps]');
+ if(p){const i=$('#pw');i.type=i.type=='password'?'text':'password';p.textContent=i.type=='password'?'Показать':'Скрыть'}
+ const h=t.closest('.hd');
+ if(h)h.parentNode.classList.toggle('cl');
+});
+document.addEventListener('submit',e=>{
+ e.preventDefault();
+ const f=e.target;
+ if(f.id=='rf'){toast('Регистрация пока недоступна');return}
+ if(f.id=='nf'){
+  const k=f.dataset.k,a=ld(k).slice(),el=f.elements;
+  a.unshift({t:el.t.value.trim(),b:el.b.value.trim(),d:new Date().toLocaleDateString('ru-RU')});
+  sv(k,a);go();toast('Тема создана');
+ }
+});
+addEventListener('hashchange',go);
+go();
+</script>
+</body>
+</html>
