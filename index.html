@@ -6,9 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DolgRassia | Форум</title>
 <style>
-:root{--bg:#e9ecf0;--row:#fff;--row2:#f4f6f8;--hd:#dfe3e8;--tx:#1c2026;--mu:#5d6672;--ln:#d3d8de;--ac:#c62818;--top:#22262c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);scroll-padding-top:env(safe-area-inset-top,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2b2f36;--row:#363a43;--row2:#3e434c;--hd:#464b55;--tx:#ecedef;--mu:#a9aeb7;--ln:#2a2d34;--ac:#d9301f;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#2b2f36;--row:#363a43;--row2:#3e434c;--hd:#464b55;--tx:#ecedef;--mu:#a9aeb7;--ln:#2a2d34;--ac:#d9301f;color-scheme:dark}
+:root{--bg:#e9ecf0;--row:#fff;--row2:#f4f6f8;--hd:#dfe3e8;--tx:#1c2026;--mu:#5d6672;--ln:#d3d8de;--ac:#c62818;--ok:#2e8b3d;--top:#22262c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2b2f36;--row:#363a43;--row2:#3e434c;--hd:#464b55;--tx:#ecedef;--mu:#a9aeb7;--ln:#2a2d34;--ac:#d9301f;--ok:#3aa14b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#2b2f36;--row:#363a43;--row2:#3e434c;--hd:#464b55;--tx:#ecedef;--mu:#a9aeb7;--ln:#2a2d34;--ac:#d9301f;--ok:#3aa14b;color-scheme:dark}
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 Roboto,system-ui,"Segoe UI",Arial,sans-serif}
@@ -47,11 +47,23 @@ input,textarea{width:100%;padding:12px;border:1px solid var(--ln);border-radius:
 .fm .ck{display:flex;align-items:center;gap:10px;font-size:16px}
 .ck input{width:20px;height:20px}
 .tp{display:flex;gap:12px;padding:14px 16px;border-top:1px solid var(--ln)}
-.tp>span:last-child{min-width:0}
+.tp>span:last-child{min-width:0;flex:1}
 .av{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;background:var(--hd);font-weight:700}
 .tp b{display:block;font-size:18px}
 .mu{display:block;color:var(--mu);font-size:14px}
-.bd{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-top:4px;white-space:pre-line}
+.bd{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-top:4px;white-space:pre-line;cursor:pointer}
+.bd.o{display:block;-webkit-line-clamp:unset}
+.sb{display:inline-block;margin-top:6px;padding:2px 10px;border-radius:10px;background:#8a8f98;color:#fff;font-size:13px}
+.sb.ok{background:var(--ok)}.sb.no{background:var(--ac)}
+.ans{margin-top:6px;padding:8px 10px;border-left:3px solid var(--ac);background:var(--row2);white-space:pre-line}
+.ctl{display:grid;gap:8px;margin-top:10px}
+.ctl .row{display:flex;gap:8px;flex-wrap:wrap}
+.ctl .bt{padding:9px 14px;font-size:15px}
+.ctl .bt.ok{background:var(--ok)}
+.dl{padding:9px 14px;border:1px solid var(--ln);border-radius:6px;background:none;color:var(--ac);font:inherit;font-size:15px;cursor:pointer}
+.stt{display:flex;flex-wrap:wrap;gap:10px;padding:16px}
+.stt div{flex:1 1 130px;padding:12px;border-radius:6px;background:var(--row2);font-size:14px;color:var(--mu)}
+.stt b{display:block;font-size:26px;color:var(--tx)}
 footer{padding:0 16px 24px;color:var(--mu);font-size:14px;text-align:center}
 #dr{position:fixed;inset:0;z-index:20;display:none}
 #dr.on{display:block}
@@ -65,9 +77,8 @@ footer{padding:0 16px 24px;color:var(--mu);font-size:14px;text-align:center}
 #ts.on{opacity:1}
 .em a{color:var(--ac)}
 .msg{margin:0;color:var(--ac);font-size:15px}
-.bd{cursor:pointer}.bd.o{display:block;-webkit-line-clamp:unset}
-.dl{margin-top:8px;padding:6px 12px;border:1px solid var(--ln);border-radius:6px;background:none;color:var(--ac);font:inherit;font-size:14px;cursor:pointer}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.ru{padding:16px;border-top:1px solid var(--ln)}.ru:nth-child(2n){background:var(--row2)}.ru b{display:block;font-size:18px}.ru p{margin:6px 0 0}.ru .pn{color:var(--ac)}.ru a{color:var(--ac)}
 </style>
 </head>
 <body>
@@ -88,8 +99,7 @@ footer{padding:0 16px 24px;color:var(--mu);font-size:14px;text-align:center}
 <div class="mh">Меню<button data-x aria-label="Закрыть">×</button></div>
 <a class="mi" href="#home">Главная</a>
 <a class="mi" href="#home">Форумы</a>
-<button class="mi s" data-na>Новые сообщения</button>
-<button class="mi" data-na>Что нового?</button>
+<a class="mi s" href="#app">Заявки (лидер / админ)</a>
 <button class="mi" data-na>Пользователи</button>
 <a class="mi" id="loginMenu" href="#login">Вход</a>
 <a class="mi" id="regMenu" href="#reg">Регистрация</a>
@@ -106,15 +116,33 @@ document.addEventListener('DOMContentLoaded', () => {
 const $=s=>document.querySelector(s),A=$('#app'),D=$('#dr'),T=$('#ts');
 const E=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const F=[
-['player','Жалобы на игроков',"Ваш ник:\nНик игрока:\nДата и время нарушения:\nСуть жалобы:\nДоказательства (ссылка):\n"],
-['admin','Жалобы на администрацию',"Ваш ник:\nНик администратора:\nДата и время:\nСуть жалобы:\nДоказательства (ссылка):\n"],
-['leader','Жалобы на лидеров',"Ваш ник:\nНик лидера и организация:\nДата и время:\nСуть жалобы:\nДоказательства (ссылка):\n"],
-['appeal','Обжалование наказаний',"Ваш ник:\nКакое наказание и кем выдано:\nДата выдачи:\nПочему наказание неверное:\nДоказательства (ссылка):\n"]];
+['player','Жалобы на игроков',"Ваш ник:\nНик игрока:\nДата и время нарушения:\nСуть жалобы:\nДоказательства (ссылка):\n",'cmp'],
+['admin','Жалобы на администрацию',"Ваш ник:\nНик администратора:\nДата и время:\nСуть жалобы:\nДоказательства (ссылка):\n",'cmp'],
+['leader','Жалобы на лидеров',"Ваш ник:\nНик лидера и организация:\nДата и время:\nСуть жалобы:\nДоказательства (ссылка):\n",'cmp'],
+['appeal','Обжалование наказаний',"Ваш ник:\nКакое наказание и кем выдано:\nДата выдачи:\nПочему наказание неверное:\nДоказательства (ссылка):\n",'cmp'],
+['lead','Заявки на лидера организации',"Ваш ник:\nВозраст:\nНа какую организацию подаёте заявку:\nОпыт лидерства:\nОнлайн в день:\nПочему именно вы:\n",'app'],
+['adm','Заявки на администратора',"Ваш ник:\nВозраст:\nОпыт администрирования:\nОнлайн в день:\nЧасовой пояс:\nПочему хотите в администрацию:\n",'app']];
 const S={news:'Новости и информация',tech:'Технический раздел',ideas:'Предложения по улучшению',rules:'Правила серверов'};
-const mem={};
+const RU=[['1. ДМ (DeathMatch)','Нельзя убивать игроков без причины, вне ролевой ситуации.','Убивайте только по причине: перестрелка, захват, война организаций.','Предупреждение или тюрьма 30–60 минут, при повторе — бан.'],
+['2. Неуважение к игроку','Нельзя оскорблять, унижать, провоцировать и травить других игроков.','Общайтесь вежливо, споры решайте спокойно или через жалобу.','Мут 30–120 минут, при повторе — бан.'],
+['3. Оскорбление родных','Нельзя упоминать и оскорблять родных и близких игрока.','Не затрагивайте семью ни в чате, ни в голосовом общении.','Бан на срок до 30 дней, при повторе — навсегда.'],
+['4. Оскорбление администратора','Нельзя оскорблять, оговаривать и провоцировать администрацию.','Если не согласны с решением админа, подайте жалобу в разделе «Жалобы на администрацию» или обжалуйте наказание.','Мут или бан от 1 до 30 дней.'],
+['5. Cheat (читы)','Запрещены читы, сторонний софт, макросы и любые программы, дающие преимущество.','Играйте только с чистым клиентом, без стороннего ПО.','Бан навсегда.'],
+['6. Сборки','Запрещены сборки с изменением игровых файлов, модами и текстурами, дающими преимущество (например, подсветка игроков, ускорение, удаление объектов).','Используйте чистый клиент или только сборки, разрешённые администрацией.','Бан до удаления сборки, при повторе — навсегда.']];
+const RULES=RU.map(r=>`<div class="ru"><b>${r[0]}</b><p><b style="display:inline;font-size:16px">Нельзя:</b> ${r[1]}</p><p><b style="display:inline;font-size:16px">Надо:</b> ${r[2]}</p><p class="pn"><b style="display:inline;font-size:16px">Наказание:</b> ${r[3]}</p></div>`).join('')+'<p class="em">Нашли нарушителя? Подайте <a href="#player">жалобу на игрока</a> с доказательствами (видео или скриншот). Не согласны с наказанием — <a href="#appeal">обжалуйте его</a>.</p>';
+const FRL=[['Общее','Нельзя оскорблять, флудить, писать бессмысленные темы и рекламировать другие проекты.','Общайтесь уважительно и пишите только по делу.'],
+['Заголовок и шаблон','Нельзя удалять шаблон или оставлять поля пустыми.','Называйте тему «Nick_Name | Суть» и заполняйте все пункты шаблона.'],
+['Жалобы и обжалования','Нельзя подавать жалобу без доказательств, ложную жалобу и дублировать одну и ту же тему.','Прикладывайте ссылку на видео или скриншот с датой и временем. Одна жалоба — одна тема, ожидайте ответа администрации.'],
+['Заявки на лидера и админа','Нельзя указывать ложные данные, подавать несколько заявок подряд и торопить администрацию.','Честно заполните анкету и дождитесь решения: «Принято» или «Отказано».'],
+['Решения администрации','Нельзя спорить с решением в теме или оскорблять проверяющего.','Если не согласны, подайте жалобу на администрацию или обжалование.']];
+const FRULES=FRL.map(r=>`<div class="ru"><b>${r[0]}</b><p><b style="display:inline;font-size:16px">Нельзя:</b> ${r[1]}</p><p><b style="display:inline;font-size:16px">Надо:</b> ${r[2]}</p></div>`).join('')+'<p class="em">Нарушение правил форума: удаление темы администратором, при повторе — блокировка.</p>';
+const FK=F.map(x=>x[0]),mem={};
+let DB=null,ADM=false;
 function ld(k){if(mem[k])return mem[k];let a=[];try{a=JSON.parse(localStorage.getItem('dr:'+k))||[]}catch(e){}return mem[k]=a}
-function sv(k,a){mem[k]=a;try{localStorage.setItem('dr:'+k,JSON.stringify(a))}catch(e){}}
+function sv(k,a){mem[k]=a;try{localStorage.setItem('dr:'+k,JSON.stringify(a))}catch(e){}
+ if(DB)DB.doc('forum/'+k).set({items:a}).catch(()=>toast('Не удалось сохранить на сервере'))}
 const tot=()=>F.reduce((s,x)=>s+ld(x[0]).length,0);
+const pend=()=>F.reduce((s,x)=>s+ld(x[0]).filter(t=>!t.s).length,0);
 const bub=(h,t,n)=>`<a class="nd" href="#${h}"><svg class="ic r"><use href="#bub"/></svg><span><b>${t}</b><span class="st">Темы ${n}<em>Сообщения ${n}</em></span>${n?'':'<span class="lp">Нет</span>'}</span></a>`;
 const lnk=(t,href)=>href=='#'?`<button class="nd" data-na><svg class="ic g"><use href="#lnk"/></svg><span><b>${t}</b></span></button>`:`<a class="nd" href="${href}" target="_blank" rel="noopener noreferrer"><svg class="ic g"><use href="#lnk"/></svg><span><b>${t}</b></span></a>`;
 const box=(t,c)=>`<section class="bx">${t?`<h2 class="hd" tabindex="0" role="button">${t}</h2>`:''}${c}</section>`;
@@ -127,8 +155,17 @@ function saveUsers(u){localStorage.setItem('dr:users',JSON.stringify(u))}
 function currentUser(){try{return JSON.parse(localStorage.getItem('dr:currentUser')||'null')}catch(e){return null}}
 function setCurrentUser(u){localStorage.setItem('dr:currentUser',JSON.stringify(u))}
 function clearCurrentUser(){localStorage.removeItem('dr:currentUser')}
-function isAdmin(){const u=currentUser();return!!u&&u.email===AE}
+function isAdmin(){const u=currentUser();return !!u&&u.email===AE}
 (function(){const us=getUsers();if(!us.some(u=>u.email===AE)){us.push({username:'DolgRussia',email:AE,password:'40614861'});saveUsers(us)}})();
+
+// --- shared storage (claude.ai db) ---
+(async()=>{try{
+ if(!window.claude||!claude.use)return;
+ const us=await claude.use('user');
+ const db=await claude.use('db');
+ if(db){DB=db;await Promise.all([...FK,...Object.keys(S)].map(async k=>{try{const d=await db.doc('forum/'+k).get();if(d.exists&&d.data().items)mem[k]=d.data().items;else if(ld(k).length)db.doc('forum/'+k).set({items:ld(k)}).catch(()=>{})}catch(e){}}))}
+ go();
+}catch(e){}})();
 
 let R=(location.hash||'#home').slice(1)||'home';
 const nav=h=>{R=h;try{if(location.hash!='#'+h)location.hash='#'+h}catch(e){}go()};
@@ -141,12 +178,16 @@ function home(){
    +lnk('Официальный Telegram-канал','https://t.me/DolgRussia'))
   +box('Игровые сервера',bub('rules',S.rules,ld('rules').length)+bub('srv','Сервер DolgRussia',n));
 }
-const tpc=(x,k,i,d)=>`<div class="tp"><span class="av">${E((x.t[0]||'?').toUpperCase())}</span><span><b>${E(x.t)}</b><span class="mu">${E(x.author||d)} · ${E(x.d)}</span><span class="bd">${E(x.b)}</span>${isAdmin()?`<button class="dl" data-del="${k}:${i}">Удалить</button>`:''}</span></div>`;
+const fname=k=>(F.find(x=>x[0]==k)||[])[1]||'';
+const SL={ok:'Принято',no:'Отказано'};
+const ctl=(k,i)=>`<span class="ctl"><input class="an" maxlength="300" placeholder="Комментарий (необязательно)"><span class="row"><button class="bt ok" data-st="${k}:${i}:ok">Принято</button><button class="bt" data-st="${k}:${i}:no">Отказано</button><button class="dl" data-del="${k}:${i}">Удалить</button></span></span>`;
+const tpc=(x,k,i,d,tag)=>`<div class="tp"><span class="av">${E((x.t[0]||'?').toUpperCase())}</span><span><b>${E(x.t)}</b><span class="mu">${tag?E(fname(k))+' · ':''}${E(x.author||d)} · ${E(x.d)}</span><span class="bd">${E(x.b)}</span>${FK.includes(k)?`<span class="sb ${x.s||''}">${SL[x.s]||'На рассмотрении'}</span>`:''}${x.s&&x.a?`<span class="ans"><b style="font-size:14px">Ответ${x.by?' · '+E(x.by):''}:</b>${E(x.a)}</span>`:''}${isAdmin()?(FK.includes(k)?ctl(k,i):`<span class="ctl"><span class="row"><button class="dl" data-del="${k}:${i}">Удалить</button></span></span>`):''}</span></div>`;
 const lst=(k,d,e)=>ld(k).length?ld(k).map((x,i)=>tpc(x,k,i,d)).join(''):`<p class="em">${e}</p>`;
 function forum(f){
- return [f[1],ttl(f[1],'Жалобы','cmp')
-  +`<div class="ac"><button class="bt" id="nw">Создать тему</button></div>`
-  +`<form id="nf" data-k="${f[0]}" hidden><input name="t" required maxlength="120" placeholder="Nick_Name | Суть жалобы"><textarea name="b" required rows="9">${f[2]}</textarea><span class="mu">Тема сохранится только в этом браузере.</span><button class="bt">Опубликовать</button></form>`
+ const p=f[3]=='app'?['Заявки','app']:['Жалобы','cmp'];
+ return [f[1],ttl(f[1],p[0],p[1])
+  +`<div class="ac"><button class="bt" id="nw">${f[3]=='app'?'Подать заявку':'Создать тему'}</button></div>`
+  +`<form id="nf" data-k="${f[0]}" hidden><input name="t" required maxlength="120" placeholder="${f[3]=='app'?'Nick_Name | Заявка':'Nick_Name | Суть жалобы'}"><textarea name="b" required rows="9">${f[2]}</textarea><span class="mu">${DB?'Тема будет видна администрации.':'Тема сохранится только в этом браузере.'}</span><button class="bt">Опубликовать</button></form>`
   +box('Обычные темы',lst(f[0],'Гость','Тем пока нет. Создайте первую.'))];
 }
 function reg(){
@@ -157,14 +198,22 @@ function login(){
 }
 function admin(){
  if(!isAdmin())return['Доступ запрещён',ttl('Доступ запрещён','Главная','home')+box('','<p class="em">У вас нет прав для просмотра этой страницы.</p>')];
- return['Админ панель',ttl('Админ панель','Главная','home')+['news','tech','ideas','rules'].map(k=>box(S[k],`<form class="afm" data-k="${k}"><input name="t" required maxlength="120" placeholder="Заголовок"><textarea name="b" required rows="5" placeholder="Текст"></textarea><button class="bt">Добавить</button></form>`+lst(k,'Админ','Пока пусто.'))).join('')];
+ const q=[];F.forEach(f=>ld(f[0]).forEach((x,i)=>{if(!x.s)q.push(tpc(x,f[0],i,'Гость',1))}));
+ const c=k=>ld(k).filter(x=>x.s=='ok').length;
+ const stat=`<div class="stt"><div><b>${pend()}</b>на рассмотрении</div><div><b>${ld('lead').length}</b>заявок на лидера</div><div><b>${ld('adm').length}</b>заявок в админы</div><div><b>${F.reduce((s,f)=>s+c(f[0]),0)}</b>принято</div></div>`;
+ return['Админ панель',ttl('Админ панель','Главная','home')
+  +box('Статистика',stat)
+  +box('Ожидают решения ('+q.length+')',q.length?q.join(''):'<p class="em">Всё рассмотрено.</p>')
+  +box('Все заявки и жалобы',F.map(f=>bub(f[0],f[1],ld(f[0]).length)).join(''))
+  +['news','tech','ideas','rules'].map(k=>box('Публикация: '+S[k],`<form class="afm" data-k="${k}"><input name="t" required maxlength="120" placeholder="Заголовок"><textarea name="b" required rows="5" placeholder="Текст"></textarea><button class="bt">Добавить</button></form>`+lst(k,'Админ','Пока пусто.'))).join('')];
 }
 function view(h){
  const f=F.find(x=>x[0]==h);
- if(h=='srv')return['Сервер DolgRussia',ttl('Сервер DolgRussia','Игровые сервера','home')+box('',bub('cmp','Жалобы',tot()))];
- if(h=='cmp')return['Жалобы',ttl('Жалобы','Сервер DolgRussia','srv')+box('',F.map(x=>bub(x[0],x[1],ld(x[0]).length)).join(''))];
+ if(h=='srv')return['Сервер DolgRussia',ttl('Сервер DolgRussia','Игровые сервера','home')+box('',bub('cmp','Жалобы',F.slice(0,4).reduce((s,x)=>s+ld(x[0]).length,0))+bub('app','Заявки (лидер / админ)',ld('lead').length+ld('adm').length))];
+ if(h=='cmp')return['Жалобы',ttl('Жалобы','Сервер DolgRussia','srv')+box('',F.slice(0,4).map(x=>bub(x[0],x[1],ld(x[0]).length)).join(''))];
+ if(h=='app')return['Заявки',ttl('Заявки','Сервер DolgRussia','srv')+box('',F.slice(4).map(x=>bub(x[0],x[1],ld(x[0]).length)).join(''))];
  if(f)return forum(f);
- if(S.hasOwnProperty(h))return[S[h],ttl(S[h],'Форумы','home')+box('',lst(h,'Гость','Тем пока нет.'))];
+ if(S.hasOwnProperty(h))return[S[h],ttl(S[h],'Форумы','home')+(h=='rules'?box('Правила форума',FRULES)+box('Правила сервера',RULES):'')+box(h=='rules'?'Дополнения':'',lst(h,'Гость','Тем пока нет.'))];
  if(h=='reg')return['Регистрация',reg()];
  if(h=='login')return['Вход',login()];
  if(h=='panel')return admin();
@@ -192,6 +241,9 @@ document.addEventListener('click',e=>{
  if(p){const i=$('#pw');i.type=i.type=='password'?'text':'password';p.textContent=i.type=='password'?'Показать':'Скрыть'}
  const dl=t.closest('[data-del]');
  if(dl&&isAdmin()){const[k,i]=dl.dataset.del.split(':'),a=ld(k).slice();a.splice(+i,1);sv(k,a);go();toast('Удалено');return}
+ const st=t.closest('[data-st]');
+ if(st&&isAdmin()){const[k,i,s]=st.dataset.st.split(':'),a=ld(k).map(x=>({...x})),x=a[+i];
+  if(x){x.s=s;x.a=(st.closest('.ctl').querySelector('.an').value||'').trim();x.by=(currentUser()||{}).username||'Админ';sv(k,a);const y=window.scrollY;go();scrollTo(0,y);toast(SL[s])}return}
  const bd=t.closest('.bd');
  if(bd)bd.classList.toggle('o');
  const h=t.closest('.hd');
@@ -244,4 +296,4 @@ go();
 });
 </script>
 </body>
- </html>
+</html>
