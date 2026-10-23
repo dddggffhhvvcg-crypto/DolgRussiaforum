@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<script>window.DB_ID='';/* ВСТАВЬ ID БАЗЫ МЕЖДУ КАВЫЧКАМИ */</script>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
@@ -92,7 +91,7 @@ footer{padding:0 16px 24px;color:var(--mu);font-size:14px;text-align:center}
 <header>
 <button class="ib" id="mn" aria-label="Меню"><svg class="hi"><use href="#mnu"/></svg></button>
 <a class="br" href="#home"><span class="lg">D</span>DolgRassia</a>
-<a class="ib" id="acc" href="#login" aria-label="Вход/Регистрация"><svg class="hi"><use href="#key"/></svg></a>
+<a class="ib" id="acc" href="#reg" aria-label="Вход/Регистрация"><svg class="hi"><use href="#key"/></svg></a>
 </header>
 <div id="dr">
 <div class="ov" data-x></div>
@@ -102,7 +101,8 @@ footer{padding:0 16px 24px;color:var(--mu);font-size:14px;text-align:center}
 <a class="mi" href="#home">Форумы</a>
 <a class="mi s" href="#app">Заявки (лидер / админ)</a>
 <button class="mi" data-na>Пользователи</button>
-<a class="mi" id="loginMenu" href="#login">Вход админа</a>
+<a class="mi" id="loginMenu" href="#login">Вход</a>
+<a class="mi" id="regMenu" href="#reg">Регистрация</a>
 <div class="mi s" id="who" hidden></div>
 <button class="mi" id="adminMenu" hidden style="background:var(--ac);color:#fff">Админ панель</button>
 <button class="mi" id="logoutMenu" hidden>Выйти</button>
@@ -137,9 +137,9 @@ const FRL=[['Общее','Нельзя оскорблять, флудить, п�
 ['Решения администрации','Нельзя спорить с решением в теме или оскорблять проверяющего.','Если не согласны, подайте жалобу на администрацию или обжалование.']];
 const FRULES=FRL.map(r=>`<div class="ru"><b>${r[0]}</b><p><b style="display:inline;font-size:16px">Нельзя:</b> ${r[1]}</p><p><b style="display:inline;font-size:16px">Надо:</b> ${r[2]}</p></div>`).join('')+'<p class="em">Нарушение правил форума: удаление темы администратором, при повторе — блокировка.</p>';
 const FK=F.map(x=>x[0]),mem={};
-let CU=null;
-function ld(k){return mem[k]||[]}
-function refresh(){const a=document.activeElement;if(a&&/INPUT|TEXTAREA/.test(a.tagName))return;const y=scrollY;go();scrollTo(0,y)}
+
+function ld(k){if(mem[k])return mem[k];let a=[];try{a=JSON.parse(localStorage.getItem('dr:'+k))||[]}catch(e){}return mem[k]=a}
+function sv(k,a){mem[k]=a;try{localStorage.setItem('dr:'+k,JSON.stringify(a))}catch(e){}}
 const tot=()=>F.reduce((s,x)=>s+ld(x[0]).length,0);
 const pend=()=>F.reduce((s,x)=>s+ld(x[0]).filter(t=>!t.s).length,0);
 const bub=(h,t,n)=>`<a class="nd" href="#${h}"><svg class="ic r"><use href="#bub"/></svg><span><b>${t}</b><span class="st">Темы ${n}<em>Сообщения ${n}</em></span>${n?'':'<span class="lp">Нет</span>'}</span></a>`;
@@ -147,28 +147,22 @@ const lnk=(t,href)=>href=='#'?`<button class="nd" data-na><svg class="ic g"><use
 const box=(t,c)=>`<section class="bx">${t?`<h2 class="hd" tabindex="0" role="button">${t}</h2>`:''}${c}</section>`;
 const ttl=(t,b,h)=>`<h1>${t}</h1>${b?`<a class="bk" href="#${h}">‹ ${b}</a>`:''}`;
 
-// --- база: ID блока с jsonblob.com (инструкция в ответе) ---
-const BLOB=window.DB_ID||'';
-const API='https://jsonblob.com/api/jsonBlob/';
-const AE='dolgrussia@gmail.com',AH='097b6d947cd0917d98509d2b9339398db60c9e88b966f4b2b9809f56ac9af684';
-const HD={'Content-Type':'application/json',Accept:'application/json'};
-const sha=async x=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(x)))].map(c=>c.toString(16).padStart(2,'0')).join('');
-async function rd(){const r=await fetch(API+BLOB,{headers:HD,cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();return Array.isArray(d.topics)?d.topics:[]}
-async function wr(t){const r=await fetch(API+BLOB,{method:'PUT',headers:HD,body:JSON.stringify({topics:t})});if(!r.ok)throw 0}
-function put(t){const m={};t.sort((a,b)=>b.ts-a.ts).forEach(x=>{(m[x.k]=m[x.k]||[]).push(x)});Object.keys(mem).forEach(k=>delete mem[k]);Object.assign(mem,m)}
-async function pull(){if(!BLOB)return;try{put(await rd());refresh()}catch(e){}}
-async function mut(fn){const n=fn(await rd());await wr(n);put(n);refresh()}
-function currentUser(){return CU}
-function isAdmin(){return !!CU&&CU.email===AE&&CU.verified}
-try{if(localStorage.getItem('dr:adm')=='1')CU={name:'Админ',email:AE,verified:true}}catch(e){}
-pull();setInterval(pull,15000);addEventListener('focus',pull);
+// --- auth ---
+const AE='dolgrussia@gmail.com';
+function getUsers(){try{return JSON.parse(localStorage.getItem('dr:users')||'[]')}catch(e){return[]}}
+function saveUsers(u){localStorage.setItem('dr:users',JSON.stringify(u))}
+function currentUser(){try{return JSON.parse(localStorage.getItem('dr:currentUser')||'null')}catch(e){return null}}
+function setCurrentUser(u){localStorage.setItem('dr:currentUser',JSON.stringify(u))}
+function clearCurrentUser(){localStorage.removeItem('dr:currentUser')}
+function isAdmin(){const u=currentUser();return !!u&&u.email===AE}
+(function(){const us=getUsers();if(!us.some(u=>u.email===AE)){us.push({username:'DolgRussia',email:AE,password:'40614861'});saveUsers(us)}})();
 
 let R=(location.hash||'#home').slice(1)||'home';
 const nav=h=>{R=h;try{if(location.hash!='#'+h)location.hash='#'+h}catch(e){}go()};
 
 function home(){
  const n=tot();
- return ttl('Форум DolgRassia')+(BLOB?'':'<div class="ac"><p class="msg">База не подключена.</p><button class="bt" data-mk>Создать базу</button></div>')
+ return ttl('Форум DolgRassia')
   +box('Основной раздел',bub('news',S.news,ld('news').length)+bub('tech',S.tech,ld('tech').length)+bub('ideas',S.ideas,ld('ideas').length)
    +['Официальное сообщество в Discord','Официальное сообщество ВКонтакте','Лаборатория разработки (ВКонтакте)'].map(t=>lnk(t,'#')).join('')
    +lnk('Официальный Telegram-канал','https://t.me/DolgRussia'))
@@ -176,21 +170,21 @@ function home(){
 }
 const fname=k=>(F.find(x=>x[0]==k)||[])[1]||'';
 const SL={ok:'Принято',no:'Отказано'};
-const ctl=(k,i)=>`<span class="ctl"><input class="an" maxlength="300" placeholder="Комментарий (необязательно)"><span class="row"><button class="bt ok" data-st="${i}:ok">Принято</button><button class="bt" data-st="${i}:no">Отказано</button><button class="dl" data-del="${i}">Удалить</button></span></span>`;
-const tpc=(x,k,_,d,tag,i=x.id)=>`<div class="tp"><span class="av">${E((x.t[0]||'?').toUpperCase())}</span><span><b>${E(x.t)}</b><span class="mu">${tag?E(fname(k))+' · ':''}${E(x.author||d)} · ${E(x.d)}</span><span class="bd">${E(x.b)}</span>${FK.includes(k)?`<span class="sb ${x.s||''}">${SL[x.s]||'На рассмотрении'}</span>`:''}${x.s&&x.a?`<span class="ans"><b style="font-size:14px">Ответ${x.by?' · '+E(x.by):''}:</b>${E(x.a)}</span>`:''}${isAdmin()?(FK.includes(k)?ctl(k,i):`<span class="ctl"><span class="row"><button class="dl" data-del="${i}">Удалить</button></span></span>`):''}</span></div>`;
+const ctl=(k,i)=>`<span class="ctl"><input class="an" maxlength="300" placeholder="Комментарий (необязательно)"><span class="row"><button class="bt ok" data-st="${k}:${i}:ok">Принято</button><button class="bt" data-st="${k}:${i}:no">Отказано</button><button class="dl" data-del="${k}:${i}">Удалить</button></span></span>`;
+const tpc=(x,k,i,d,tag)=>`<div class="tp"><span class="av">${E((x.t[0]||'?').toUpperCase())}</span><span><b>${E(x.t)}</b><span class="mu">${tag?E(fname(k))+' · ':''}${E(x.author||d)} · ${E(x.d)}</span><span class="bd">${E(x.b)}</span>${FK.includes(k)?`<span class="sb ${x.s||''}">${SL[x.s]||'На рассмотрении'}</span>`:''}${x.s&&x.a?`<span class="ans"><b style="font-size:14px">Ответ${x.by?' · '+E(x.by):''}:</b>${E(x.a)}</span>`:''}${isAdmin()?(FK.includes(k)?ctl(k,i):`<span class="ctl"><span class="row"><button class="dl" data-del="${k}:${i}">Удалить</button></span></span>`):''}</span></div>`;
 const lst=(k,d,e)=>ld(k).length?ld(k).map((x,i)=>tpc(x,k,i,d)).join(''):`<p class="em">${e}</p>`;
 function forum(f){
  const p=f[3]=='app'?['Заявки','app']:['Жалобы','cmp'];
  return [f[1],ttl(f[1],p[0],p[1])
   +`<div class="ac"><button class="bt" id="nw">${f[3]=='app'?'Подать заявку':'Создать тему'}</button></div>`
-  +`<form id="nf" data-k="${f[0]}" hidden><input name="t" required maxlength="120" placeholder="${f[3]=='app'?'Nick_Name | Заявка':'Nick_Name | Суть жалобы'}"><textarea name="b" required rows="9">${f[2]}</textarea><span class="mu">Тема будет видна администрации. Вход не нужен.</span><button class="bt">Опубликовать</button></form>`
+  +`<form id="nf" data-k="${f[0]}" hidden><input name="t" required maxlength="120" placeholder="${f[3]=='app'?'Nick_Name | Заявка':'Nick_Name | Суть жалобы'}"><textarea name="b" required rows="9">${f[2]}</textarea><span class="mu">Тема сохранится только в этом браузере.</span><button class="bt">Опубликовать</button></form>`
   +box('Обычные темы',lst(f[0],'Гость','Тем пока нет. Создайте первую.'))];
 }
 function reg(){
  return ttl('Регистрация')+`<form id="rf" class="fm"><label>Имя пользователя <small>Обязательно</small><input name="username" required maxlength="30" autocomplete="username"></label><span class="mu">Это имя будет отображаться в ваших сообщениях.</span><label>Электронная почта <small>Обязательно</small><input name="email" type="email" required autocomplete="email"></label><label>Пароль <small>Обязательно</small><span class="pw"><input id="pw" name="password" type="password" required minlength="6" autocomplete="new-password"><button type="button" data-ps>Показать</button></span></label><label class="ck"><input type="checkbox" required>Я согласен(на) с условиями и политикой конфиденциальности</label><button class="bt">Зарегистрироваться</button></form><p class="em">Уже есть аккаунт? <a href="#login">Войти</a></p>`;
 }
 function login(){
- return ttl('Вход')+`<form id="lf" class="fm"><label>Электронная почта<input name="email" type="email" required autocomplete="username"></label><label>Пароль<span class="pw"><input id="pw" name="password" type="password" required autocomplete="current-password"><button type="button" data-ps>Показать</button></span></label><button class="bt">Войти</button></form>`;
+ return ttl('Вход')+`<form id="lf" class="fm"><label>Электронная почта<input name="email" type="email" required autocomplete="username"></label><label>Пароль<span class="pw"><input id="pw" name="password" type="password" required autocomplete="current-password"><button type="button" data-ps>Показать</button></span></label><button class="bt">Войти</button></form><p class="em">Нет аккаунта? <a href="#reg">Зарегистрироваться</a></p>`;
 }
 function admin(){
  if(!isAdmin())return['Доступ запрещён',ttl('Доступ запрещён','Главная','home')+box('','<p class="em">У вас нет прав для просмотра этой страницы.</p>')];
@@ -218,8 +212,8 @@ function view(h){
 function go(){
  const h=R,r=view(h),u=currentUser();
  A.innerHTML=r[1];document.title=r[0]+' | DolgRassia';scrollTo(0,0);
- $('#adminMenu').hidden=!isAdmin();$('#logoutMenu').hidden=!u;$('#loginMenu').hidden=!!u;$('#acc').hidden=!!u;
- const w=$('#who');w.hidden=!u;if(u)w.textContent='Вы вошли как '+u.name;
+ $('#adminMenu').hidden=!isAdmin();$('#logoutMenu').hidden=!u;$('#loginMenu').hidden=!!u;$('#regMenu').hidden=!!u;$('#acc').hidden=!!u;
+ const w=$('#who');w.hidden=!u;if(u)w.textContent='Вы вошли как '+u.username;
 }
 let tm;
 function toast(m){T.textContent=m;T.classList.add('on');clearTimeout(tm);tm=setTimeout(()=>T.classList.remove('on'),1800)}
@@ -236,11 +230,10 @@ document.addEventListener('click',e=>{
  const p=t.closest('[data-ps]');
  if(p){const i=$('#pw');i.type=i.type=='password'?'text':'password';p.textContent=i.type=='password'?'Показать':'Скрыть'}
  const dl=t.closest('[data-del]');
- if(dl&&isAdmin()){const id=dl.dataset.del;mut(a=>a.filter(x=>x.id!==id)).then(()=>toast('Удалено')).catch(()=>toast('Ошибка связи с базой'));return}
+ if(dl&&isAdmin()){const[k,i]=dl.dataset.del.split(':'),a=ld(k).slice();a.splice(+i,1);sv(k,a);go();toast('Удалено');return}
  const st=t.closest('[data-st]');
- if(st&&isAdmin()){const[id,s]=st.dataset.st.split(':'),cm=(st.closest('.ctl').querySelector('.an').value||'').trim();mut(a=>a.map(x=>x.id==id?{...x,s,a:cm,by:'Админ'}:x)).then(()=>toast(SL[s])).catch(()=>toast('Ошибка связи с базой'));return}
- const mk=t.closest('[data-mk]');
- if(mk){fetch(API,{method:'POST',headers:HD,body:'{"topics":[]}'}).then(r=>{const id=(r.headers.get('Location')||'').split('/').pop();mk.parentNode.innerHTML=id?`<p class="em">ID базы: <b>${E(id)}</b><br>Вставьте его во 2-ю строку файла между кавычками и сохраните файл на GitHub.</p>`:'<p class="em">ID получить не удалось. Создайте базу вручную на jsonblob.com.</p>'}).catch(()=>toast('Нет связи с jsonblob'));return}
+ if(st&&isAdmin()){const[k,i,s]=st.dataset.st.split(':'),a=ld(k).map(x=>({...x})),x=a[+i];
+  if(x){x.s=s;x.a=(st.closest('.ctl').querySelector('.an').value||'').trim();x.by=(currentUser()||{}).username||'Админ';sv(k,a);const y=window.scrollY;go();scrollTo(0,y);toast(SL[s])}return}
  const bd=t.closest('.bd');
  if(bd)bd.classList.toggle('o');
  const h=t.closest('.hd');
@@ -261,22 +254,33 @@ function bad(f){for(const el of f.elements){
  return''}
 let busy=false;
 function sub(f){
- if(busy)return;
- const er=bad(f);if(er){msg(f,er);return}
- if(f.id=='lf'){
-  const d=new FormData(f),email=d.get('email').trim().toLowerCase();busy=true;
-  sha(d.get('password')).then(h=>{if(email===AE&&h===AH){CU={name:'Админ',email:AE,verified:true};try{localStorage.setItem('dr:adm','1')}catch(e){}toast('Вход выполнен');nav('home')}else msg(f,'Неверная почта или пароль')}).finally(()=>busy=false);return}
- const k=f.dataset.k,adm=f.classList.contains('afm');
- if(!k||(adm&&!isAdmin()))return;
- if(!BLOB){msg(f,'База не подключена');return}
- const el=f.elements,t=el.t.value.trim(),b=el.b.value.trim(),m=b.match(/Ваш ник:[ \t]*([^\n]+)/);
- const x={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),k,t,b,d:new Date().toLocaleDateString('ru-RU'),author:adm?'Админ':((m&&m[1].trim().slice(0,40))||'Гость'),ts:Date.now()};
- busy=true;
- mut(a=>[x,...a]).then(()=>toast(adm?'Добавлено':'Тема отправлена')).catch(()=>msg(f,'Не удалось отправить')).finally(()=>busy=false);
+ if(busy)return;busy=true;
+ try{
+  const er=bad(f);if(er){msg(f,er);return}
+  if(f.id=='rf'||f.id=='lf'){
+   const d=new FormData(f),email=d.get('email').trim().toLowerCase(),pw=d.get('password'),us=getUsers();
+   if(f.id=='rf'){
+    const un=d.get('username').trim();
+    if(us.some(u=>u.email===email)){msg(f,'Такая почта уже зарегистрирована');return}
+    if(us.some(u=>u.username.toLowerCase()==un.toLowerCase())){msg(f,'Это имя занято');return}
+    us.push({username:un,email,password:pw});saveUsers(us);setCurrentUser({username:un,email});toast('Регистрация успешна!');
+   }else{
+    const u=us.find(x=>x.email===email&&x.password===pw);
+    if(!u){msg(f,'Неверная почта или пароль');return}
+    setCurrentUser({username:u.username,email:u.email});toast('Вход выполнен');
+   }
+   nav('home');return;
+  }
+  const k=f.dataset.k,adm=f.classList.contains('afm');
+  if(!k||(adm&&!isAdmin()))return;
+  const el=f.elements,t=el.t.value.trim(),b=el.b.value.trim(),u=currentUser(),a=ld(k).slice();
+  a.unshift({t,b,d:new Date().toLocaleDateString('ru-RU'),author:u?u.username:(adm?'Админ':'Гость')});
+  sv(k,a);go();toast(adm?'Добавлено':'Тема создана');
+ }finally{busy=false}
 }
 document.addEventListener('submit',e=>{e.preventDefault();sub(e.target)});
 $('#adminMenu').addEventListener('click',()=>{D.classList.remove('on');nav('panel')});
-$('#logoutMenu').addEventListener('click',()=>{CU=null;try{localStorage.removeItem('dr:adm')}catch(e){}D.classList.remove('on');toast('Вы вышли');nav('home')});
+$('#logoutMenu').addEventListener('click',()=>{clearCurrentUser();D.classList.remove('on');toast('Вы вышли');nav('home')});
 addEventListener('hashchange',()=>{const h=(location.hash||'#home').slice(1)||'home';if(h!=R){R=h;go()}});
 go();
 });
