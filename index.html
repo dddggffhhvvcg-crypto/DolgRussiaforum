@@ -5,6 +5,7 @@
 <meta name="color-scheme" content="light dark">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DolgRassia | Форум</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
 <style>
 :root{--bg:#e9ecf0;--row:#fff;--row2:#f4f6f8;--hd:#dfe3e8;--tx:#1c2026;--mu:#5d6672;--ln:#d3d8de;--ac:#c62818;--ok:#2e8b3d;--top:#22262c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);scroll-padding-top:env(safe-area-inset-top,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2b2f36;--row:#363a43;--row2:#3e434c;--hd:#464b55;--tx:#ecedef;--mu:#a9aeb7;--ln:#2a2d34;--ac:#d9301f;--ok:#3aa14b;color-scheme:dark}}
@@ -37,6 +38,7 @@ h1{margin:0;padding:26px 16px 14px;font-size:30px;font-weight:400}
 .em{margin:0;padding:22px 16px;color:var(--mu)}
 .ac{padding:0 16px 16px}
 .bt{padding:12px 20px;border:0;border-radius:6px;background:var(--ac);color:#fff;font:inherit;font-weight:500;cursor:pointer}
+.bt.ok{background:var(--ok)}
 form{display:grid;gap:12px;padding:0 16px 20px}
 input,textarea{width:100%;padding:12px;border:1px solid var(--ln);border-radius:6px;background:var(--row2);color:var(--tx);font:inherit}
 .fm label{display:grid;gap:8px;font-size:18px}
@@ -59,11 +61,12 @@ input,textarea{width:100%;padding:12px;border:1px solid var(--ln);border-radius:
 .ctl{display:grid;gap:8px;margin-top:10px}
 .ctl .row{display:flex;gap:8px;flex-wrap:wrap}
 .ctl .bt{padding:9px 14px;font-size:15px}
-.ctl .bt.ok{background:var(--ok)}
 .dl{padding:9px 14px;border:1px solid var(--ln);border-radius:6px;background:none;color:var(--ac);font:inherit;font-size:15px;cursor:pointer}
 .stt{display:flex;flex-wrap:wrap;gap:10px;padding:16px}
 .stt div{flex:1 1 130px;padding:12px;border-radius:6px;background:var(--row2);font-size:14px;color:var(--mu)}
 .stt b{display:block;font-size:26px;color:var(--tx)}
+.db-box{padding:16px;display:grid;gap:12px}
+.db-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 footer{padding:0 16px 24px;color:var(--mu);font-size:14px;text-align:center}
 #dr{position:fixed;inset:0;z-index:20;display:none}
 #dr.on{display:block}
@@ -108,11 +111,11 @@ footer{padding:0 16px 24px;color:var(--mu);font-size:14px;text-align:center}
 <button class="mi" id="logoutMenu" hidden>Выйти</button>
 </nav>
 </div>
-<main id="app"></main>
+<main id="app"><p class="em">Подключение к forum.db...</p></main>
 <footer>© DolgRassia</footer>
 <div id="ts" role="status"></div>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
 const $=s=>document.querySelector(s),A=$('#app'),D=$('#dr'),T=$('#ts');
 const E=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const F=[
@@ -136,26 +139,146 @@ const FRL=[['Общее','Нельзя оскорблять, флудить, п�
 ['Заявки на лидера и админа','Нельзя указывать ложные данные, подавать несколько заявок подряд и торопить администрацию.','Честно заполните анкету и дождитесь решения: «Принято» или «Отказано».'],
 ['Решения администрации','Нельзя спорить с решением в теме или оскорблять проверяющего.','Если не согласны, подайте жалобу на администрацию или обжалование.']];
 const FRULES=FRL.map(r=>`<div class="ru"><b>${r[0]}</b><p><b style="display:inline;font-size:16px">Нельзя:</b> ${r[1]}</p><p><b style="display:inline;font-size:16px">Надо:</b> ${r[2]}</p></div>`).join('')+'<p class="em">Нарушение правил форума: удаление темы администратором, при повторе — блокировка.</p>';
-const FK=F.map(x=>x[0]),mem={};
+const FK=F.map(x=>x[0]);
+const AE='dolgrussia@gmail.com';
 
-function ld(k){if(mem[k])return mem[k];let a=[];try{a=JSON.parse(localStorage.getItem('dr:'+k))||[]}catch(e){}return mem[k]=a}
-function sv(k,a){mem[k]=a;try{localStorage.setItem('dr:'+k,JSON.stringify(a))}catch(e){}}
+// --- СВЯЗЬ С БАЗОЙ ДАННЫХ FORUM.DB (SQLite) ---
+let db = null;
+let SQL = null;
+
+function uint8ToBase64(u8) {
+ let bin = '';
+ for (let i = 0; i < u8.length; i += 0x8000) {
+  bin += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+ }
+ return btoa(bin);
+}
+function base64ToUint8(b64) {
+ const bin = atob(b64), u8 = new Uint8Array(bin.length);
+ for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+ return u8;
+}
+
+function ensureTables() {
+ db.run(`CREATE TABLE IF NOT EXISTS posts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+   cat TEXT,
+  t TEXT,
+  b TEXT,
+  d TEXT,
+  author TEXT,
+  s TEXT,
+  a TEXT,
+  by_admin TEXT
+ )`);
+ db.run(`CREATE TABLE IF NOT EXISTS users (
+  username TEXT,
+  email TEXT PRIMARY KEY,
+  password TEXT
+ )`);
+ db.run(`INSERT OR IGNORE INTO users (username, email, password) VALUES ('DolgRussia', ?, '40614861')`, [AE]);
+}
+
+function persistDB() {
+ if (!db) return;
+ try {
+  const data = db.export();
+  localStorage.setItem('dr:forum_db_b64', uint8ToBase64(data));
+ } catch (e) {}
+}
+
+async function initDB(forceFetch = false) {
+ try {
+  if (!SQL) {
+   SQL = await initSqlJs({
+    locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${f}`
+   });
+  }
+  const savedB64 = !forceFetch ? localStorage.getItem('dr:forum_db_b64') : null;
+  if (savedB64) {
+   db = new SQL.Database(base64ToUint8(savedB64));
+  } else {
+   try {
+    const res = await fetch('./forum.db?t=' + Date.now());
+    if (res.ok) {
+     const buf = await res.arrayBuffer();
+     db = new SQL.Database(new Uint8Array(buf));
+    } else {
+     db = new SQL.Database();
+    }
+   } catch (e) {
+    db = new SQL.Database();
+   }
+  }
+  ensureTables();
+  persistDB();
+ } catch (e) {
+  console.error('Ошибка БД:', e);
+ }
+}
+
+await initDB();
+
+function ld(k) {
+ if (!db) return [];
+ try {
+  const stmt = db.prepare('SELECT t, b, d, author, s, a, by_admin FROM posts WHERE cat = ? ORDER BY id ASC');
+  stmt.bind([k]);
+  const arr = [];
+  while (stmt.step()) {
+   const r = stmt.getAsObject();
+   const item = { t: r.t, b: r.b, d: r.d, author: r.author };
+   if (r.s) item.s = r.s;
+   if (r.a) item.a = r.a;
+   if (r.by_admin) item.by = r.by_admin;
+   arr.push(item);
+  }
+  stmt.free();
+  return arr;
+ } catch (e) { return []; }
+}
+
+function sv(k, a) {
+ if (!db) return;
+ db.run('DELETE FROM posts WHERE cat = ?', [k]);
+ const stmt = db.prepare('INSERT INTO posts (cat, t, b, d, author, s, a, by_admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+ for (const x of a) {
+  stmt.run([k, x.t||'', x.b||'', x.d||'', x.author||'Гость', x.s||'', x.a||'', x.by||'']);
+ }
+ stmt.free();
+ persistDB();
+}
+
+// --- Пользователи в forum.db ---
+function getUsers() {
+ if (!db) return [];
+ try {
+  const stmt = db.prepare('SELECT username, email, password FROM users');
+  const us = [];
+  while (stmt.step()) us.push(stmt.getAsObject());
+  stmt.free();
+  return us;
+ } catch (e) { return []; }
+}
+function saveUsers(u) {
+ if (!db) return;
+ db.run('DELETE FROM users');
+ const stmt = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
+ for (const x of u) stmt.run([x.username, x.email, x.password]);
+ stmt.free();
+ persistDB();
+}
+function currentUser(){try{return JSON.parse(localStorage.getItem('dr:currentUser')||'null')}catch(e){return null}}
+function setCurrentUser(u){localStorage.setItem('dr:currentUser',JSON.stringify(u))}
+function clearCurrentUser(){localStorage.removeItem('dr:currentUser')}
+function isAdmin(){const u=currentUser();return !!u&&u.email===AE}
+
 const tot=()=>F.reduce((s,x)=>s+ld(x[0]).length,0);
 const pend=()=>F.reduce((s,x)=>s+ld(x[0]).filter(t=>!t.s).length,0);
 const bub=(h,t,n)=>`<a class="nd" href="#${h}"><svg class="ic r"><use href="#bub"/></svg><span><b>${t}</b><span class="st">Темы ${n}<em>Сообщения ${n}</em></span>${n?'':'<span class="lp">Нет</span>'}</span></a>`;
 const lnk=(t,href)=>href=='#'?`<button class="nd" data-na><svg class="ic g"><use href="#lnk"/></svg><span><b>${t}</b></span></button>`:`<a class="nd" href="${href}" target="_blank" rel="noopener noreferrer"><svg class="ic g"><use href="#lnk"/></svg><span><b>${t}</b></span></a>`;
 const box=(t,c)=>`<section class="bx">${t?`<h2 class="hd" tabindex="0" role="button">${t}</h2>`:''}${c}</section>`;
 const ttl=(t,b,h)=>`<h1>${t}</h1>${b?`<a class="bk" href="#${h}">‹ ${b}</a>`:''}`;
-
-// --- auth ---
-const AE='dolgrussia@gmail.com';
-function getUsers(){try{return JSON.parse(localStorage.getItem('dr:users')||'[]')}catch(e){return[]}}
-function saveUsers(u){localStorage.setItem('dr:users',JSON.stringify(u))}
-function currentUser(){try{return JSON.parse(localStorage.getItem('dr:currentUser')||'null')}catch(e){return null}}
-function setCurrentUser(u){localStorage.setItem('dr:currentUser',JSON.stringify(u))}
-function clearCurrentUser(){localStorage.removeItem('dr:currentUser')}
-function isAdmin(){const u=currentUser();return !!u&&u.email===AE}
-(function(){const us=getUsers();if(!us.some(u=>u.email===AE)){us.push({username:'DolgRussia',email:AE,password:'40614861'});saveUsers(us)}})();
 
 let R=(location.hash||'#home').slice(1)||'home';
 const nav=h=>{R=h;try{if(location.hash!='#'+h)location.hash='#'+h}catch(e){}go()};
@@ -177,7 +300,7 @@ function forum(f){
  const p=f[3]=='app'?['Заявки','app']:['Жалобы','cmp'];
  return [f[1],ttl(f[1],p[0],p[1])
   +`<div class="ac"><button class="bt" id="nw">${f[3]=='app'?'Подать заявку':'Создать тему'}</button></div>`
-  +`<form id="nf" data-k="${f[0]}" hidden><input name="t" required maxlength="120" placeholder="${f[3]=='app'?'Nick_Name | Заявка':'Nick_Name | Суть жалобы'}"><textarea name="b" required rows="9">${f[2]}</textarea><span class="mu">Тема сохранится только в этом браузере.</span><button class="bt">Опубликовать</button></form>`
+  +`<form id="nf" data-k="${f[0]}" hidden><input name="t" required maxlength="120" placeholder="${f[3]=='app'?'Nick_Name | Заявка':'Nick_Name | Суть жалобы'}"><textarea name="b" required rows="9">${f[2]}</textarea><span class="mu">Тема сохраняется в базу данных forum.db.</span><button class="bt">Опубликовать</button></form>`
   +box('Обычные темы',lst(f[0],'Гость','Тем пока нет. Создайте первую.'))];
 }
 function reg(){
@@ -191,7 +314,9 @@ function admin(){
  const q=[];F.forEach(f=>ld(f[0]).forEach((x,i)=>{if(!x.s)q.push(tpc(x,f[0],i,'Гость',1))}));
  const c=k=>ld(k).filter(x=>x.s=='ok').length;
  const stat=`<div class="stt"><div><b>${pend()}</b>на рассмотрении</div><div><b>${ld('lead').length}</b>заявок на лидера</div><div><b>${ld('adm').length}</b>заявок в админы</div><div><b>${F.reduce((s,f)=>s+c(f[0]),0)}</b>принято</div></div>`;
+ const dbPanel=`<div class="db-box"><span class="mu">Скачайте готовый файл <b>forum.db</b> и загрузите его в репозиторий GitHub, чтобы все изменения и новые темы стали видны всем пользователям сайта.</span><div class="db-row"><button type="button" class="bt ok" id="dlDb">Скачать forum.db</button><label class="bt" style="display:inline-block"><input type="file" id="upDb" accept=".db,.sqlite" hidden>Загрузить forum.db</label><button type="button" class="dl" id="syncDb">Перекачать с GitHub</button></div></div>`;
  return['Админ панель',ttl('Админ панель','Главная','home')
+  +box('База данных (forum.db)',dbPanel)
   +box('Статистика',stat)
   +box('Ожидают решения ('+q.length+')',q.length?q.join(''):'<p class="em">Всё рассмотрено.</p>')
   +box('Все заявки и жалобы',F.map(f=>bub(f[0],f[1],ld(f[0]).length)).join(''))
@@ -217,8 +342,18 @@ function go(){
 }
 let tm;
 function toast(m){T.textContent=m;T.classList.add('on');clearTimeout(tm);tm=setTimeout(()=>T.classList.remove('on'),1800)}
-document.addEventListener('click',e=>{
+
+document.addEventListener('click',async e=>{
  const t=e.target;
+ if(t.closest('#dlDb')&&isAdmin()){
+  const data=db.export(),blob=new Blob([data],{type:'application/x-sqlite3'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='forum.db';a.click();URL.revokeObjectURL(a.href);
+  toast('Файл forum.db скачан');return;
+ }
+ if(t.closest('#syncDb')&&isAdmin()){
+  localStorage.removeItem('dr:forum_db_b64');
+  await initDB(true);go();toast('Загружена версия с GitHub');return;
+ }
  const sb=t.closest('form button:not([type=button])');
  if(sb){e.preventDefault();sub(sb.closest('form'));return}
  const ln=t.closest('a[href^="#"]');
@@ -239,6 +374,15 @@ document.addEventListener('click',e=>{
  const h=t.closest('.hd');
  if(h)h.parentNode.classList.toggle('cl');
 });
+
+document.addEventListener('change',async e=>{
+ if(e.target.id==='upDb'&&isAdmin()&&e.target.files[0]){
+  const buf=await e.target.files[0].arrayBuffer();
+  db=new SQL.Database(new Uint8Array(buf));
+  ensureTables();persistDB();go();toast('База forum.db загружена!');
+ }
+});
+
 document.addEventListener('keydown',e=>{
  if(e.key=='Escape')D.classList.remove('on');
  if((e.key=='Enter'||e.key==' ')&&e.target.classList&&e.target.classList.contains('hd')){e.preventDefault();e.target.parentNode.classList.toggle('cl')}
